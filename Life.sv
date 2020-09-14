@@ -50,6 +50,7 @@ localparam CONF_STR =
    "-;",
    "F1,MEM,Load board;",
    "-;",
+   "O4,HighLife,Off,On;",
    "O3,Running,Yes,No;",
    "O2,Seed,Off,On;",
    "O1,Aspect Ratio,16:9,4:3;",  
@@ -155,9 +156,14 @@ always @(posedge conway_clk) begin
    r2p1 <= r2p2; r2p2 <= pixel_out_row2;
    r3p1 <= r3p2; r3p2 <= pixel_out_fifo;
    
-   /* status[3] = running flag. If false, the existing pixel is simply copied to the next generation. */
-   output_pixel <= status[3] ? r2p2 : (neighbor_count | r2p2) == 4'd3;
-   
+   /* status[3] = running flag. If true (default false), the existing pixel is simply copied to the next generation.
+      status[4] = HighLife (B36/S23) flag - https://www.conwaylife.com/wiki/OCA:HighLife
+   */
+   if(status[4])
+      output_pixel <= status[3] ? r2p2 : (neighbor_count | r2p2) == 4'd3) || ((neighbor_count ^ r2p2) == 4'd6;
+   else
+      output_pixel <= status[3] ? r2p2 : (neighbor_count | r2p2) == 4'd3;
+
    /* Monochrome output, if pixel is set we set the brightness to max, if not set it to min */
    fb_pixel <= {8{output_pixel}};
            
