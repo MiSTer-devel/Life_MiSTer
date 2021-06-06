@@ -160,7 +160,7 @@ always @(posedge conway_clk) begin
       status[4] = HighLife (B36/S23) flag - https://www.conwaylife.com/wiki/OCA:HighLife
    */
    if(status[4])
-      output_pixel <= status[3] ? r2p2 : (neighbor_count | r2p2) == 4'd3) || ((neighbor_count ^ r2p2) == 4'd6;
+      output_pixel <= status[3] ? r2p2 : (neighbor_count | r2p2) == 4'd3 || neighbor_count == 4'd6 & ~r2p2;
    else
       output_pixel <= status[3] ? r2p2 : (neighbor_count | r2p2) == 4'd3;
 
