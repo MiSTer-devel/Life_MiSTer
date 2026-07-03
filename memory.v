@@ -1,11 +1,13 @@
 module row (
    input           clock,
+   input           enable,
    input    [0:0]  shiftin,
    output   [0:0]  shiftout
 );
 
    altshift_taps  ALTSHIFT_TAPS_component (
             .clock (clock),
+            .clken (enable),
             .shiftin (shiftin),
             .shiftout (shiftout)
             );
@@ -20,24 +22,36 @@ module row (
 endmodule
 
 
-module ring (  
+module ring #(
+        parameter [21:0] START_ADDR = 22'd0
+) (  
         input clock,
-		  input enable,
-		  input shiftin,
-	     output shiftout,
-		  input [31:0] status
+        input reset,
+        input enable,
+        input write_delay,
+        input shiftin,
+        output shiftout,
+        input [31:0] status
 );      
 	  
-		  reg [21:0] counter = 0;
+		  reg [21:0] counter = START_ADDR;
+		  reg [21:0] write_counter = START_ADDR;
 		  		  
 		  always @(posedge clock) begin
-				if (enable)
-					counter <= ~|counter ? 2472795 : counter - 1'b1;														
+				if (reset) begin
+					counter <= START_ADDR;
+					write_counter <= START_ADDR;
+				end
+				else begin
+					write_counter <= counter;
+					if (enable)
+						counter <= ~|counter ? 2472795 : counter - 1'b1;
+				end
 		  end
 		  
 		  
 	altsyncram	altsyncram_component (
-				.address_a (counter),
+				.address_a (write_delay ? write_counter : counter),
 				.address_b (counter),
 				.clock0 (clock),
 				.data_a (shiftin),
